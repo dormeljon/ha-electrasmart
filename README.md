@@ -1,6 +1,7 @@
 # Electra Smart AC — Community-Maintained Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dormeljon&repository=ha-electrasmart&category=integration)
 
 Community-maintained fork of the official [Electra Smart](https://www.home-assistant.io/integrations/electrasmart) Home Assistant integration, originally developed by [@jafar-atili](https://github.com/jafar-atili).
 
@@ -25,7 +26,11 @@ The `I_RAT` and `I_CALC_AT` telemetry values from the Electra API are raw intege
 
 ## Installation
 
-### HACS (recommended)
+### HACS (one-click)
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dormeljon&repository=ha-electrasmart&category=integration)
+
+Or manually:
 
 1. Open HACS in Home Assistant
 2. Click the 3-dot menu → **Custom repositories**
