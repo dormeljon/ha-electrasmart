@@ -5,6 +5,6 @@
   "config_flow": true,
   "documentation": "https://github.com/dormeljon/ha-electrasmart-fix",
   "iot_class": "cloud_polling",
-  "requirements": ["pyElectra==1.2.4"],
+  "requirements": ["pyElectra==1.2.5"],
   "version": "1.0.0"
 }
