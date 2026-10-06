@@ -1,10 +1,11 @@
 {
   "domain": "electrasmart",
-  "name": "Electra Smart (Fixed)",
-  "codeowners": ["@jafar-atili", "@dormeljon"],
+  "name": "Electra Smart",
+  "codeowners": ["@dormeljon"],
   "config_flow": true,
-  "documentation": "https://github.com/dormeljon/ha-electrasmart-fix",
+  "documentation": "https://github.com/dormeljon/ha-electrasmart",
   "iot_class": "cloud_polling",
-  "requirements": ["pyElectra==1.2.4"],
-  "version": "1.0.0"
+  "version": "1.1.0",
+  "requirements": ["pyelectrasmart==1.0.0"]
 }
+

@@ -1,34 +1,65 @@
-"""The Electra Air Conditioner integration."""
-
+"""Support for Electra Smart air conditioners."""
 from __future__ import annotations
 
+import logging
 from typing import cast
 
-from electrasmart.api import ElectraAPI, ElectraApiError
-
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_TOKEN, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import CONF_IMEI, DOMAIN
+from pyelectrasmart import ElectraAPI
 
+_LOGGER = logging.getLogger(__name__)
+
+DOMAIN = "electrasmart"
 PLATFORMS: list[Platform] = [Platform.CLIMATE]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Electra Smart Air Conditioner from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-    entry.async_on_unload(entry.add_update_listener(update_listener))
-    hass.data[DOMAIN][entry.entry_id] = ElectraAPI(
-        async_get_clientsession(hass), entry.data[CONF_IMEI], entry.data[CONF_TOKEN]
+    """Set up Electra Smart from a config entry."""
+    _LOGGER.debug(
+        "Setting up Electra Smart entry '%s' (configured keys: %s)",
+        entry.entry_id,
+        list(entry.data.keys()),
     )
 
+    # Instantiate API client
+    api = ElectraAPI(
+        entry.data.get("imei"),
+        entry.data.get("token"),
+    )
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = api
+
     try:
-        await cast(ElectraAPI, hass.data[DOMAIN][entry.entry_id]).fetch_devices()
-    except ElectraApiError as exp:
-        raise ConfigEntryNotReady(f"Error communicating with API: {exp}") from exp
+        _LOGGER.debug("Fetching Electra devices from cloud API...")
+        await api.fetch_devices()
+
+        devices = getattr(api, "devices", None) or getattr(api, "air_conditioners", [])
+        _LOGGER.info("Discovered %d Electra device(s)", len(devices))
+        for dev in devices:
+            _LOGGER.debug(
+                "Device: name=%s, id=%s, model=%s",
+                getattr(dev, "name", "Unknown"),
+                getattr(dev, "id", "Unknown"),
+                getattr(dev, "model", "Unknown"),
+            )
+
+    except KeyError as err:
+        _LOGGER.error(
+            "Electra API payload schema mismatch (KeyError: %s). "
+            "Electra has updated their backend API payload structure.",
+            err,
+            exc_info=True,
+        )
+        raise ConfigEntryNotReady(f"Electra API schema changed: missing key {err}") from err
+
+    except Exception as err:
+        _LOGGER.error("Failed to connect or fetch devices from Electra: %s", err, exc_info=True)
+        raise ConfigEntryNotReady(f"Could not connect to Electra cloud: {err}") from err
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -41,7 +72,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     return unload_ok
 
-
-async def update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
-    """Update listener."""
-    await hass.config_entries.async_reload(config_entry.entry_id)
